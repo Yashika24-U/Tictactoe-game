@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { calculateWinner } from "../calculateWinner";
+import ToggleButton from "./ToggleButton";
 
 const Board = () => {
   const [squares, setSquares] = useState(Array(9).fill(null));
@@ -7,6 +8,16 @@ const Board = () => {
   const [winner, setWinner] = useState(null);
   const [isDraw, setIsDraw] = useState(false);
   const [winningLine, setWinningLine] = useState([]);
+  const [score, setScore] = useState({
+    X: 0,
+    O: 0,
+    draws: 0,
+  });
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
 
   const handleClick = (index) => {
     if (squares[index] || winner) return;
@@ -17,9 +28,16 @@ const Board = () => {
     if (result) {
       setWinner(result.winner);
       setWinningLine(result.line);
-    } else if (!winner && newSquares.every((square) => square !== null)) {
+      setScore((prev) => {
+        return { ...prev, [result.winner]: prev[result.winner] + 1 };
+      });
+    } else if (newSquares.every((square) => square !== null)) {
       setIsDraw(true);
+      setScore((prev) => {
+        return { ...prev, draws: prev.draws + 1 };
+      });
     }
+
     setSquares(newSquares);
     setIsXTurn(!isXTurn);
   };
@@ -56,28 +74,40 @@ const Board = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-        <p className="text-2xl font-bold text-center my-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded shadow">
-          {status}
-        </p>
+    <div className={`${darkMode ? "dark" : ""}`}>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <ToggleButton darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
+          <p className="text-2xl font-bold text-center my-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded shadow ">
+            {status}
+          </p>
 
-        {/* Board Logic */}
-        <div className="grid grid-cols-3 gap-6">
-          {squares.map((_, index) => renderSquare(index))}
+          {/* Score Board */}
+          <div className="text-center mt-4">
+            <h2 className="text-xl font-semibold mb-2">Score Board</h2>
+            <p className="text-lg">
+              {" "}
+              X : {score.X} | O : {score.O} | Draws : {score.draws}
+            </p>
+          </div>
+
+          {/* Board Logic */}
+          <div className="grid grid-cols-3 gap-6">
+            {squares.map((_, index) => renderSquare(index))}
+          </div>
+
+          {/* Status Logic */}
+          <p className="text-xl font-bold text-center my-4">
+            {(winner || isDraw) && (
+              <button
+                onClick={handleReset}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              >
+                Restart
+              </button>
+            )}
+          </p>
         </div>
-
-        {/* Status Logic */}
-        <p className="text-xl font-bold text-center my-4">
-          {(winner || isDraw) && (
-            <button
-              onClick={handleReset}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-            >
-              Restart
-            </button>
-          )}
-        </p>
       </div>
     </div>
   );
