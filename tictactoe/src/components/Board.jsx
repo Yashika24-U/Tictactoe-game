@@ -25,8 +25,7 @@ const Board = ({ darkMode, toggleDarkMode }) => {
   }, [isVsComputer, isXTurn, winner, isDraw, squares]);
 
   const handleClick = (index) => {
-    if (squares[index] || winner || isDraw || (isVsComputer && !isXTurn))
-      return;
+    if (squares[index] || winner || isDraw || !isXTurn) return;
     const newSquares = [...squares];
     newSquares[index] = "X";
     setSquares(newSquares);
@@ -45,7 +44,9 @@ const Board = ({ darkMode, toggleDarkMode }) => {
         return { ...prev, draws: prev.draws + 1 };
       });
     }
-    setIsVsComputer(true);
+
+    // After a small delay, let the computer play
+    setTimeout(() => makeComputerMove(newSquares), 5000);
   };
 
   const makeComputerMove = (currentSquares) => {
@@ -64,6 +65,8 @@ const Board = ({ darkMode, toggleDarkMode }) => {
 
     const updatedSquares = [...currentSquares];
     updatedSquares[randomIndex] = "O";
+    setSquares(updatedSquares);
+    setIsVsComputer(false);
 
     const result = calculateWinner(updatedSquares);
 
@@ -78,6 +81,8 @@ const Board = ({ darkMode, toggleDarkMode }) => {
       setScore((prev) => {
         return { ...prev, draws: prev.draws + 1 };
       });
+    } else {
+      setIsXTurn(true);
     }
   };
 
@@ -101,7 +106,7 @@ const Board = ({ darkMode, toggleDarkMode }) => {
       <div
         key={index}
         onClick={() => handleClick(index)}
-        className={`w-24 h-24 border-2 border-gray-500 flex  items-center justify-center text-2xl font-bold cursor-pointer hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600
+        className={`w-24 h-24 border-2 border-gray-500 flex  items-center justify-center text-2xl font-bold cursor-pointer hover:bg-gray-200  dark:hover:bg-gray-600
         ${
           isWinningSquare
             ? "bg-green-400 text-white border-green-400 dark:bg-green-600 dark:text-white"
@@ -116,6 +121,7 @@ const Board = ({ darkMode, toggleDarkMode }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen dark:bg-gray-800">
       <ToggleButton darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+
       <div className="bg-gray-100 p-6 rounded-lg shadow-md">
         <p className="text-2xl font-bold text-center my-4 bg-yellow-100 text-yellow-800 px-4 py-2 rounded shadow dark:bg-yellow-300 dark:hover:bg-yellow-600 dark:text-gray-900">
           {status}
