@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { calculateWinner } from "../calculateWinner";
 import ToggleButton from "./ToggleButton";
 
@@ -8,21 +8,12 @@ const Board = ({ darkMode, toggleDarkMode }) => {
   const [winner, setWinner] = useState(null);
   const [isDraw, setIsDraw] = useState(false);
   const [winningLine, setWinningLine] = useState([]);
-  const [isVsComputer, setIsVsComputer] = useState(false);
+
   const [score, setScore] = useState({
     X: 0,
     O: 0,
     draws: 0,
   });
-
-  useEffect(() => {
-    if (isVsComputer && !isXTurn && !winner && !isDraw) {
-      const timer = setTimeout(() => {
-        makeComputerMove(squares);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isVsComputer, isXTurn, winner, isDraw, squares]);
 
   const handleClick = (index) => {
     if (squares[index] || winner || isDraw || !isXTurn) return;
@@ -38,6 +29,7 @@ const Board = ({ darkMode, toggleDarkMode }) => {
       setScore((prev) => {
         return { ...prev, [result.winner]: prev[result.winner] + 1 };
       });
+      return;
     } else if (newSquares.every((square) => square !== null)) {
       setIsDraw(true);
       setScore((prev) => {
@@ -46,7 +38,7 @@ const Board = ({ darkMode, toggleDarkMode }) => {
     }
 
     // After a small delay, let the computer play
-    setTimeout(() => makeComputerMove(newSquares), 5000);
+    setTimeout(() => makeComputerMove(newSquares), 800);
   };
 
   const makeComputerMove = (currentSquares) => {
@@ -58,6 +50,8 @@ const Board = ({ darkMode, toggleDarkMode }) => {
         return val !== null;
       });
 
+      // This is a safety check to prevent the computer from trying to make a move when there are no available squares left.
+    
     if (emptyIndices.length === 0) return;
 
     const randomIndex =
@@ -66,7 +60,6 @@ const Board = ({ darkMode, toggleDarkMode }) => {
     const updatedSquares = [...currentSquares];
     updatedSquares[randomIndex] = "O";
     setSquares(updatedSquares);
-    setIsVsComputer(false);
 
     const result = calculateWinner(updatedSquares);
 
